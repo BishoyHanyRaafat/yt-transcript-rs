@@ -38,7 +38,6 @@ chrono = { version = "0.4.41", features = ["serde"] }
 # Parsing and text processing
 regex = "1.10.2"
 quick-xml = { version = "0.37.5", features = ["serialize"] }
-cargo-husky = { version = "1.5.0", features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy", "run-cargo-check"] }
 html2text = "0.14.4"
 html-escape = "0.2.13"
 scraper = "0.23.1"
@@ -46,7 +45,7 @@ clap = { version = "4.5.1", features = ["env"] }
 
 
 [dev-dependencies]
-cargo-husky = "1.5.0"
+cargo-husky = { version = "1.5.0", features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy", "run-cargo-check"] }
 # Testing dependencies
 mockito = "1.7.0"
 tempfile = "3.19.1"

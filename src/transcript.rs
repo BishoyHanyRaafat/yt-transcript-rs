@@ -245,9 +245,35 @@ impl Transcript {
         for track in caption_tracks {
             if let Some(language_code) = track.get("languageCode").and_then(|lc| lc.as_str()) {
                 if language_code == self.language_code {
-                    if let Some(base_url) = track.get("baseUrl").and_then(|url| url.as_str()) {
-                        matching_url = Some(base_url.to_string());
-                        break;
+                    let is_asr = track
+                        .get("kind")
+                        .and_then(|k| k.as_str())
+                        .map(|k| k == "asr")
+                        .unwrap_or(false);
+                    if is_asr == self.is_generated {
+                        if let Some(base_url) = track.get("baseUrl").and_then(|url| url.as_str()) {
+                            matching_url = Some(base_url.to_string());
+                            break;
+                        }
+                    } else if matching_url.is_none() {
+                        if let Some(base_url) = track.get("baseUrl").and_then(|url| url.as_str()) {
+                            matching_url = Some(base_url.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        if matching_url.is_none() {
+            for track in caption_tracks {
+                if let Some(language_code) = track.get("languageCode").and_then(|lc| lc.as_str()) {
+                    if language_code.starts_with(&self.language_code)
+                        || self.language_code.starts_with(language_code)
+                    {
+                        if let Some(base_url) = track.get("baseUrl").and_then(|url| url.as_str()) {
+                            matching_url = Some(base_url.to_string());
+                            break;
+                        }
                     }
                 }
             }
@@ -265,6 +291,9 @@ impl Transcript {
                 ),
             }),
         })?;
+
+        // Remove fmt=srv3 so YouTube returns standard <transcript><text ...> XML format
+        let transcript_url = transcript_url.replace("&fmt=srv3", "");
 
         // Fetch transcript content using the fresh URL from InnerTube
         let response =

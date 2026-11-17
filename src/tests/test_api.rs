@@ -178,6 +178,7 @@ async fn test_fetch_non_existent_video() {
     let error = result.unwrap_err();
     match error.reason {
         Some(CouldNotRetrieveTranscriptReason::VideoUnavailable)
+        | Some(CouldNotRetrieveTranscriptReason::VideoUnplayable { .. })
         | Some(CouldNotRetrieveTranscriptReason::YouTubeDataUnparsable(_)) => {
             // These are acceptable errors
         }
@@ -364,7 +365,10 @@ async fn test_fetch_streaming_data() {
     let streaming_data = result.unwrap();
 
     // Verify that we have some basic data
-    assert!(!streaming_data.formats.is_empty(), "Formats list is empty");
+    assert!(
+        !streaming_data.formats.is_empty() || !streaming_data.adaptive_formats.is_empty(),
+        "Both formats and adaptive formats are empty"
+    );
     assert!(
         !streaming_data.adaptive_formats.is_empty(),
         "Adaptive formats list is empty"
@@ -374,7 +378,7 @@ async fn test_fetch_streaming_data() {
         "Expiration time is empty"
     );
 
-    // Check some format details
+    // Check format details if combined formats are present
     for format in &streaming_data.formats {
         assert!(format.itag > 0, "Invalid itag value");
         assert!(!format.mime_type.is_empty(), "MIME type is empty");

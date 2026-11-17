@@ -8,12 +8,14 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 struct Transcript {
     #[serde(rename = "text")]
     texts: Vec<Text>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 struct Text {
     #[serde(rename = "@start")]
@@ -224,7 +226,7 @@ impl TranscriptParser {
                 Ok(Event::Start(e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
 
-                    if tag_name == "text" {
+                    if tag_name == "text" || tag_name == "p" {
                         in_text = true;
 
                         // Process attributes
@@ -232,10 +234,20 @@ impl TranscriptParser {
                             let key = String::from_utf8_lossy(attr.key.as_ref()).to_string();
                             let value = String::from_utf8_lossy(&attr.value).to_string();
 
-                            if key == "start" {
-                                start = value;
-                            } else if key == "dur" {
-                                duration = value;
+                            if tag_name == "text" {
+                                if key == "start" {
+                                    start = value;
+                                } else if key == "dur" {
+                                    duration = value;
+                                }
+                            } else if tag_name == "p" {
+                                if key == "t" {
+                                    start =
+                                        (value.parse::<f64>().unwrap_or(0.0) / 1000.0).to_string();
+                                } else if key == "d" {
+                                    duration =
+                                        (value.parse::<f64>().unwrap_or(0.0) / 1000.0).to_string();
+                                }
                             }
                         }
                     } else if in_text {
@@ -270,7 +282,7 @@ impl TranscriptParser {
                 Ok(Event::End(e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
 
-                    if tag_name == "text" {
+                    if tag_name == "text" || tag_name == "p" {
                         in_text = false;
 
                         // Process content based on formatting preferences

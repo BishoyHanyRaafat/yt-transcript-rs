@@ -97,8 +97,8 @@ impl InnerTubeClient {
         let payload = json!({
             "context": {
                 "client": {
-                    "clientName": "WEB",
-                    "clientVersion": "2.20231219.04.00",
+                    "clientName": "ANDROID",
+                    "clientVersion": "20.10.38",
                     "hl": "en",
                     "gl": "US"
                 }
@@ -106,17 +106,21 @@ impl InnerTubeClient {
             "videoId": video_id
         });
 
-        let response = self.client
+        let response = self
+            .client
             .post(url)
             .json(&payload)
             .header("Content-Type", "application/json")
-            .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36")
+            .header(
+                "User-Agent",
+                "com.google.android.youtube/20.10.38 (Linux; U; Android 14; US) gzip",
+            )
             .send()
             .await
             .map_err(|e| CouldNotRetrieveTranscript {
                 video_id: video_id.to_string(),
                 reason: Some(CouldNotRetrieveTranscriptReason::YouTubeRequestFailed(
-                    format!("InnerTube player API request failed: {}", e)
+                    format!("InnerTube player API request failed: {}", e),
                 )),
             })?;
 

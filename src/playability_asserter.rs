@@ -171,7 +171,7 @@ impl PlayabilityAsserter {
                     .and_then(|s| s.as_str())
                     .unwrap_or("");
 
-                if reason.contains("Video unavailable") {
+                if reason.to_lowercase().contains("unavailable") {
                     Err(CouldNotRetrieveTranscript {
                         video_id: video_id.to_string(),
                         reason: Some(CouldNotRetrieveTranscriptReason::VideoUnavailable),
